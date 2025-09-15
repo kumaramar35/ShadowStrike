@@ -7,7 +7,7 @@ import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
 import sessionConfig from "./config/session.js";
 import authRoutes from "./routes/authRoutes.js";
-
+import userRoutes from "./routes/userRoutes.js";
 
 connectDB();
 
@@ -17,10 +17,10 @@ const app = express();
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Postman / curl jaisi requests allow karne ke liye
+   
       if (!origin) return callback(null, true);
 
-      // ✅ Specific domains allowed
+      //  Specific domains allowed
       const allowedOrigins = [
         "http://localhost:3000",    
         "http://localhost:5173" ,
@@ -43,5 +43,5 @@ app.use(cookieParser());
 app.use(sessionConfig);
 
 app.use("/api/auth", authRoutes);
-
+app.use("/api/users", userRoutes);
 export default app;
