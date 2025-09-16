@@ -42,7 +42,13 @@ export const login = async (req, res) => {
     // Cookie
     res.cookie("token", token, { httpOnly: true, secure: false });
 
-    res.json({ message: "Login successful", token, role: user.role });
+    // Send user id along with token and role
+    res.json({ 
+      message: "Login successful", 
+      token, 
+      role: user.role,
+      user_id: user._id  
+    });
   } catch (err) {
     res.status(500).json({ message: "Error in login", error: err.message });
   }
