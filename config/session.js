@@ -1,7 +1,7 @@
 import session from "express-session";
 import MongoStore from "connect-mongo";
 
-console.log("🔍 MONGO_URI from .env:", process.env.MONGO_URI); // Debug log
+// console.log("🔍 MONGO_URI from .env:", process.env.MONGO_URI); // Debug log
 
 if (!process.env.MONGO_URI) {
   throw new Error("❌ MONGO_URI is not defined. Check your .env file.");
