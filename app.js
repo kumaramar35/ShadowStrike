@@ -8,11 +8,14 @@ import connectDB from "./config/db.js";
 import sessionConfig from "./config/session.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import brandRoutes from "./routes/brandRoutes.js";
 import invoiceRoutes from "./routes/invoiceRoutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 connectDB();
 
 const app = express();
@@ -52,5 +55,6 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/brands", brandRoutes);
 app.use("/api/invoice", invoiceRoutes);
 export default app;

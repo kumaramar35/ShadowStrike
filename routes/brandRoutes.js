@@ -1,11 +1,11 @@
 import express from 'express';
 import Brand from '../models/Brand.js';
-import auth from '../middleware/auth.js'; // adjust path as needed
+import { isAuthenticated } from "../middlewares/authMiddleware.js";
+import { authorizeRoles } from "../middlewares/roleMiddleware.js";
 
 const router = express.Router();
 
-// Get all brands
-router.get('/', auth([0, 1]), async (req, res) => {
+router.get('/', isAuthenticated, authorizeRoles("admin", "super_admin"), async (req, res) => {
     try {
         const brands = await Brand.find();
         res.json(brands);
@@ -14,18 +14,14 @@ router.get('/', auth([0, 1]), async (req, res) => {
     }
 });
 
-// Create or update brand
-router.post('/save', auth([0, 1]), async (req, res) => {
+router.post('/save', isAuthenticated, authorizeRoles("admin", "super_admin"), async (req, res) => {
     try {
         const { id, name, email, status } = req.body;
-
         if (!name) {
             return res.status(400).json({ message: "Name is required." });
         }
-
         let brand;
         if (id) {
-            // Update existing brand
             brand = await Brand.findById(id);
             if (!brand) {
                 return res.status(404).json({ message: "Brand not found." });
@@ -36,7 +32,6 @@ router.post('/save', auth([0, 1]), async (req, res) => {
             await brand.save();
             return res.json({ message: "Brand updated successfully.", brand });
         } else {
-            // Create new brand
             brand = new Brand({ name, email, status });
             await brand.save();
             return res.status(201).json({ message: "Brand created successfully.", brand });
