@@ -10,6 +10,7 @@ import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import brandRoutes from "./routes/brandRoutes.js";
 import invoiceRoutes from "./routes/invoiceRoutes.js";
+import profileRoutes from "./routes/profileRoutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -57,4 +58,5 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/brands", brandRoutes);
 app.use("/api/invoice", invoiceRoutes);
+app.use("/api/profile", profileRoutes);
 export default app;
