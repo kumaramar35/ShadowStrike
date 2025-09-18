@@ -38,6 +38,8 @@ app.use(
         "http://localhost:5173" ,
         "http://localhost:5174"  ,           // Local frontend
         "https://your-frontend-app.onrender.com", // Render / Vercel frontend
+        "https://admin.shadowstrike.fun/",
+        "https://shadowstrike.fun/ ",
       ];
 
       if (allowedOrigins.includes(origin)) {
