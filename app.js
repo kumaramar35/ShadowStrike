@@ -33,14 +33,15 @@ app.use(
       if (!origin) return callback(null, true);
 
       //  Specific domains allowed
-      const allowedOrigins = [
-        "http://localhost:3000",    
-        "http://localhost:5173" ,
-        "http://localhost:5174"  ,           // Local frontend
-        "https://your-frontend-app.onrender.com", // Render / Vercel frontend
-        "https://admin.shadowstrike.fun/",
-        "https://shadowstrike.fun/ ",
-      ];
+   const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://your-frontend-app.onrender.com",
+  "https://admin.shadowstrike.fun",
+  "https://shadowstrike.fun"
+];
+
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
