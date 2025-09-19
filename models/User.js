@@ -26,7 +26,8 @@ const userSchema = new mongoose.Schema(
     dob: { type: Date }, // ✅ Added
     avatar: { type: String, trim: true }, // ✅ Added - image URL
     bio: { type: String, trim: true }, // ✅ Added - short description
-    password: { type: String, required: true, minlength: 6 },
+    password: { type: String, required: true },
+    
     role: {
       type: String,
       enum: ["admin", "super_admin", "staff", "manager", "player", "user"],
