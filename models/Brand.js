@@ -35,17 +35,17 @@ const brandSchema = new mongoose.Schema(
     canCashAppDeposit: { type: Boolean, default: false },
 
     // ----- Fees -----
-    playerDepositFee: { type: Number, default: 0 },     // %
-    playerWithdrawalFee: { type: Number, default: 0 },  // %
-    brandDepositFee: { type: Number, default: 0 },      // %
-    brandWithdrawalFee: { type: Number, default: 0 },   // %
+    playerDepositFee: { type: Number, default: 0.13 },     // %
+    playerWithdrawalFee: { type: Number, default: 0.10 },  // %
+    brandDepositFee: { type: Number, default: 0.11 },      // %
+    brandWithdrawalFee: { type: Number, default: 0.06 },   // %
 
     // ----- Transaction limits -----
-    minDeposit: { type: Number, default: 0 },
-    maxDeposit: { type: Number, default: 0 },
-    minWithdrawal: { type: Number, default: 0 },
-    maxWithdrawal: { type: Number, default: 0 },
-    withdrawalPercentage: { type: Number, default: 0 },
+    minDeposit: { type: Number, default: 5.00 },
+    maxDeposit: { type: Number, default: 999.00},
+    minWithdrawal: { type: Number, default: 25.00 },
+    maxWithdrawal: { type: Number, default: 999.00 },
+    withdrawalPercentage: { type: Number, default: 60 },
 
     // ----- Wallet -----
     availableBalance: { type: Number, default: 0 },
