@@ -17,7 +17,6 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: String,
       required: true,
-      match: [/^\d{10}$/, "Please enter a valid 10-digit phone number"],
     },
     city: { type: String, trim: true }, // ✅ Added
     state: { type: String, trim: true }, // ✅ Added
