@@ -1,5 +1,6 @@
 import Transaction from "../models/Transaction.js";
 import { v4 as uuidv4 } from "uuid";
+import PDFDocument from "pdfkit";
 
 // @desc    Create new transaction
 export const createTransaction = async (req, res) => {
@@ -63,71 +64,39 @@ export const getAllTransactions = async (req, res) => {
   } 
 };
 
-export const getReceipt = async (req, res) => {
+export const getReceiptPdf = async (req, res) => {
   try {
-    const txId = req.params.id;
-    const tx = await Transaction.findById(txId).populate("userId", "name email");
-    if (!tx) return res.status(404).send("<h2>Transaction not found</h2>");
+    const tx = await Transaction.findById(req.params.id);
+    if (!tx) return res.status(404).json({ message: "Transaction not found" });
 
-    const invoiceNo = "RCPT-" + uuidv4().slice(0, 8).toUpperCase();
-    const today = new Date();
-    const logoUrl = `${req.protocol}://${req.get("host")}/public/logo.jpeg`;
+    // Prepare response headers
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename=receipt-${tx.transactionId}.pdf`
+    );
 
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <title>Receipt ${invoiceNo}</title>
-        <style>
-          body { font-family: Arial, sans-serif; background:#f5f5f5; padding:20px; }
-          .box { background:#fff; max-width:800px; margin:auto; padding:30px;
-                 border:1px solid #ddd; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
-          h1 { margin-top:0; color:#2c3e50; }
-          table { width:100%; border-collapse:collapse; margin-top:25px; }
-          th, td { border:1px solid #ddd; padding:8px; }
-          th { background:#2c3e50; color:#fff; }
-          .note { font-size:12px; color:#555; margin-top:25px; }
-        </style>
-      </head>
-      <body>
-        <div class="box">
-          <h1>Payment Receipt</h1>
-          <img src="${logoUrl}" alt="logo" style="height:45px"/>
-          <p><b>Receipt No:</b> ${invoiceNo}</p>
-          <p><b>Date:</b> ${today.toDateString()}</p>
+    const doc = new PDFDocument({ margin: 40 });
 
-          <p><b>User:</b> ${tx.userId?.name || "Guest"} (${tx.userId?.email || ""})</p>
+    doc.fontSize(20).text("Payment Receipt", { align: "center" });
+    doc.moveDown();
 
-          <table>
-            <thead>
-              <tr><th>#</th><th>Provider</th><th>Paid</th><th>Coins</th><th>Status</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1</td>
-                <td>${tx.provider}</td>
-                <td>$${tx.amountPaid}</td>
-                <td>${tx.amountLoaded}</td>
-                <td>${tx.status}</td>
-              </tr>
-            </tbody>
-          </table>
+    doc.fontSize(12).text(`Transaction ID: ${tx.transactionId}`);
+    doc.text(`Date: ${tx.date.toLocaleDateString()}`);
+    doc.text(`Provider: ${tx.provider}`);
+    doc.text(`Amount Paid: $${tx.amountPaid}`);
+    doc.text(`Coins Loaded: ${tx.amountLoaded}`);
+    doc.text(`Status: ${tx.status}`);
+    doc.moveDown();
 
-          <p><b>Total Paid:</b> $${tx.amountPaid}</p>
+    doc.text(
+      "This receipt is for your reference only. Since this is a dummy project, no real payment has been processed.",
+      { align: "justify" }
+    );
 
-          <div class="note">
-            This is a dummy receipt generated for testing.  
-            All transactions are final once coins are credited.
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
-
-    res.set("Content-Type", "text/html");
-    res.send(html);
-  } catch (err) {
-    res.status(500).send(`<h3>Error: ${err.message}</h3>`);
+    doc.end();
+    doc.pipe(res);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
