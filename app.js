@@ -13,6 +13,7 @@ import invoiceRoutes from "./routes/invoiceRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import coinRoutes from "./routes/coinRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
+import brandListUserRoutes from "./routes/brandListUserRoutes.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -67,4 +68,5 @@ app.use("/api/invoice", invoiceRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/coins", coinRoutes);
 app.use("/api/transactions", transactionRoutes);
+app.use("/api/brandList",brandListUserRoutes)
 export default app;

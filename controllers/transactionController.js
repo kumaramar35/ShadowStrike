@@ -157,7 +157,7 @@ export const getReceiptPdf = async (req, res) => {
     doc
       .fontSize(14)
       .fillColor("#2c3e50")
-      .text(`Total Paid: $${tx.amountPaid}`, { align: "right" });
+      .text(`Total Paid: $${tx.amountPaid}`, {},{ align: "right" });
 
     doc.moveDown(2);
 
