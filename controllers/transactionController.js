@@ -187,34 +187,7 @@ export const getReceiptPdf = async (req, res) => {
 
     doc.moveDown(4);
 
-    // Button
- const pageWidth = doc.page.width;
-const btnMargin = 60; // leave some space on both sides
-const btnWidth = pageWidth - btnMargin * 2; // dynamic width
-const btnHeight = 45;
-const btnX = btnMargin; // start after left margin
-const btnY = doc.y;
-    doc
-      .roundedRect(btnX, btnY, btnWidth, btnHeight, 6)
-      .fill("#4F46E5");
-    doc
-      .fillColor("#fff")
-      .font("Helvetica-Bold")
-      .fontSize(16)
-      .text("Print Receipt", btnX, btnY + 13, {
-        width: btnWidth,
-        align: "center",
-      });
-
-    // Footer (centered)
-    doc
-      .font("Helvetica")
-      .fontSize(10)
-      .fillColor("#777")
-      .text("Need help? Contact support@locknpay.com", margin, btnY + btnHeight + 35, {
-        align: "center",
-        width: doc.page.width - margin * 2,
-      });
+  
 
     doc.end();
   } catch (err) {
