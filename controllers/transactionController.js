@@ -1,7 +1,7 @@
 import Transaction from "../models/Transaction.js";
 import { v4 as uuidv4 } from "uuid";
 import PDFDocument from "pdfkit";
-
+import path from "path";
 // @desc    Create new transaction
 export const createTransaction = async (req, res) => {
   try {
@@ -68,111 +68,157 @@ export const getAllTransactions = async (req, res) => {
 
 export const getReceiptPdf = async (req, res) => {
   try {
-    const txId = req.params.id;
-    const tx = await Transaction.findById(txId).populate("userId", "name email");
+    const tx = await Transaction.findById(req.params.id).populate(
+      "userId",
+      "name email"
+    );
     if (!tx) return res.status(404).json({ message: "Transaction not found" });
 
-    const invoiceNo = "RCPT-" + uuidv4().slice(0, 8).toUpperCase();
-    const today = new Date();
+    const receiptData = {
+      receiptId: "#" + Math.floor(174684000 + Math.random() * 900000000),
+      datePaid: new Date().toLocaleString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }),
+      username: tx.userId?.name || "Guest",
+      status: tx.status || "Completed",
+      loadAmount: tx.amountPaid || 0,
+      totalPaid: tx.amountPaid || 0,
+    };
 
-    // Response headers
+    // --- PDF setup
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      `inline; filename=receipt-${invoiceNo}.pdf`
+      `inline; filename=receipt-${receiptData.receiptId}.pdf`
     );
 
-    const doc = new PDFDocument({ size: "A4", margin: 40 });
-
-    // Pipe the PDF directly to response
+    const margin = 50;
+    const doc = new PDFDocument({ size: "A4", margin });
     doc.pipe(res);
 
-    // ====== Header ======
-    doc
-      .fontSize(24)
-      .fillColor("#2c3e50")
-      .text("Payment Receipt", { align: "center" });
+    // Helper: row
+    const addRow = (y, label, value, options = {}) => {
+      const {
+        size = 12,
+        font = "Helvetica",
+        labelColor = "#555",
+        valueColor = "#000",
+      } = options;
+      doc.fontSize(size).font(font).fillColor(labelColor).text(label, margin, y);
+      doc
+        .fontSize(size)
+        .font(font)
+        .fillColor(valueColor)
+        .text(value, margin, y, {
+          align: "right",
+          width: doc.page.width - margin * 2,
+        });
+    };
+    const drawHr = (y) => {
+      doc
+        .strokeColor("#ddd")
+        .moveTo(margin, y)
+        .lineTo(doc.page.width - margin, y)
+        .stroke();
+    };
 
-    doc.moveDown(0.5);
-
-    const logoPath = "public/logo.jpeg"; // put your logo under /public
+    // --- Logo (centered)
+    const logoPath = path.join(process.cwd(), "public", "logo.jpeg");
     try {
-      doc.image(logoPath, doc.page.width / 2 - 25, doc.y, { fit: [50, 50] });
-    } catch {
-      // if logo not found, skip silently
+      const logoWidth = 160;
+      const logoHeight = 60;
+      const centerX = doc.page.width / 2 - logoWidth / 2;
+      doc.image(logoPath, centerX, 40, {
+        fit: [logoWidth, logoHeight],
+      });
+    } catch (err) {
+      console.error("Could not load logo. Is the path correct?", err);
     }
-    doc.moveDown(2);
+    doc.y = 120;
 
-    // ====== Meta info ======
+    // Title
     doc
-      .fontSize(12)
+      .font("Helvetica-Bold")
+      .fontSize(24)
       .fillColor("#000")
-      .text(`Receipt No: ${invoiceNo}`)
-      .text(`Date: ${today.toDateString()}`)
-      .moveDown(0.5);
+      .text("Payment Receipt", { align: "center" });
+    doc.moveDown(3);
 
-    doc.text(
-      `User: ${tx.userId?.name || "Guest"} (${tx.userId?.email || ""})`
-    );
+    // Receipt Details
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(12)
+      .fillColor("#555")
+      .text("RECEIPT DETAILS", margin);
+    doc.moveDown(1);
+    addRow(doc.y, "Receipt ID", receiptData.receiptId);
+    addRow(doc.y, "Date Paid", receiptData.datePaid);
+    addRow(doc.y, "Username", receiptData.username);
+    addRow(doc.y, "Status", receiptData.status);
+    doc.moveDown(2);
+ 
 
+    drawHr(doc.y);
+       doc.moveDown(1);
+    doc.moveDown(0.5);
+    // Payment Summary
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(12)
+      .fillColor("#555")
+      .text("PAYMENT SUMMARY", margin);
+    doc.moveDown(1);
+    addRow(doc.y, "Load Amount", `$${receiptData.loadAmount.toFixed(2)}`);
     doc.moveDown(1.5);
 
-    // ====== Table header ======
-    const tableTop = doc.y;
-    const tableLeft = 50;
-    const colWidths = [40, 150, 100, 100, 80];
+    drawHr(doc.y);
+    doc.moveDown(0.5);
 
-    doc
-      .fontSize(12)
-      .fillColor("#fff")
-      .rect(tableLeft, tableTop, 470, 22)
-      .fill("#2c3e50");
-
-    doc
-      .fillColor("#fff")
-      .text("#", tableLeft + 5, tableTop + 5)
-      .text("Provider", tableLeft + 40, tableTop + 5)
-      .text("Paid", tableLeft + 190, tableTop + 5)
-      .text("Coins", tableLeft + 290, tableTop + 5)
-      .text("Status", tableLeft + 390, tableTop + 5);
-
-    // ====== Table body ======
-    const rowY = tableTop + 28;
-    doc
-      .fontSize(12)
-      .fillColor("#000")
-      .rect(tableLeft, rowY - 2, 470, 24)
-      .stroke("#ddd");
-
-    doc
-      .text("1", tableLeft + 5, rowY + 2)
-      .text(tx.provider, tableLeft + 40, rowY + 2)
-      .text(`$${tx.amountPaid}`, tableLeft + 190, rowY + 2)
-      .text(tx.amountLoaded, tableLeft + 290, rowY + 2)
-      .text(tx.status, tableLeft + 390, rowY + 2);
+    addRow(doc.y, "Total Paid", `$${receiptData.totalPaid.toFixed(2)}`, {
+      size: 14,
+      font: "Helvetica-Bold",
+      labelColor: "#000",
+    });
 
     doc.moveDown(4);
 
-    // ====== Total ======
+    // Button
+ const pageWidth = doc.page.width;
+const btnMargin = 60; // leave some space on both sides
+const btnWidth = pageWidth - btnMargin * 2; // dynamic width
+const btnHeight = 45;
+const btnX = btnMargin; // start after left margin
+const btnY = doc.y;
     doc
-      .fontSize(14)
-      .fillColor("#2c3e50")
-      .text(`Total Paid: $${tx.amountPaid}`, {},{ align: "right" });
+      .roundedRect(btnX, btnY, btnWidth, btnHeight, 6)
+      .fill("#4F46E5");
+    doc
+      .fillColor("#fff")
+      .font("Helvetica-Bold")
+      .fontSize(16)
+      .text("Print Receipt", btnX, btnY + 13, {
+        width: btnWidth,
+        align: "center",
+      });
 
-    doc.moveDown(2);
+    // Footer (centered)
+    doc
+      .font("Helvetica")
+      .fontSize(10)
+      .fillColor("#777")
+      .text("Need help? Contact support@locknpay.com", margin, btnY + btnHeight + 35, {
+        align: "center",
+        width: doc.page.width - margin * 2,
+      });
 
-    // ====== Footer note ======
-    // doc
-    //   .fontSize(10)
-    //   .fillColor("#555")
-    //   .text(
-    //     "This is a dummy receipt generated for testing purposes.\nAll transactions are final once coins are credited.",
-    //     { align: "center" }
-    //   );
-
-    // Finalize PDF
     doc.end();
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("PDF generation error:", err);
+    res.status(500).json({ message: "Failed to generate PDF receipt." });
   }
 };
