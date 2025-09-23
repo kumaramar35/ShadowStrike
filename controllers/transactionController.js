@@ -89,109 +89,116 @@ export const getReceiptPdf = async (req, res) => {
       loadAmount: tx.amountPaid || 0,
       totalPaid: tx.amountPaid || 0,
     };
-
+  res.status(200).json({
+      message: "Receipt fetched successfully",
+      receipt: receiptData,
+    });
+  } catch (err) {
+    console.error("Receipt fetch error:", err);
+    res.status(500).json({ message: "Failed to fetch receipt data." });
+  }
     // --- PDF setup
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `inline; filename=receipt-${receiptData.receiptId}.pdf`
-    );
+  //   res.setHeader("Content-Type", "application/pdf");
+  //   res.setHeader(
+  //     "Content-Disposition",
+  //     `inline; filename=receipt-${receiptData.receiptId}.pdf`
+  //   );
 
-    const margin = 50;
-    const doc = new PDFDocument({ size: "A4", margin });
-    doc.pipe(res);
+  //   const margin = 50;
+  //   const doc = new PDFDocument({ size: "A4", margin });
+  //   doc.pipe(res);
 
-    // Helper: row
-    const addRow = (y, label, value, options = {}) => {
-      const {
-        size = 12,
-        font = "Helvetica",
-        labelColor = "#555",
-        valueColor = "#000",
-      } = options;
-      doc.fontSize(size).font(font).fillColor(labelColor).text(label, margin, y);
-      doc
-        .fontSize(size)
-        .font(font)
-        .fillColor(valueColor)
-        .text(value, margin, y, {
-          align: "right",
-          width: doc.page.width - margin * 2,
-        });
-    };
-    const drawHr = (y) => {
-      doc
-        .strokeColor("#ddd")
-        .moveTo(margin, y)
-        .lineTo(doc.page.width - margin, y)
-        .stroke();
-    };
+  //   // Helper: row
+  //   const addRow = (y, label, value, options = {}) => {
+  //     const {
+  //       size = 12,
+  //       font = "Helvetica",
+  //       labelColor = "#555",
+  //       valueColor = "#000",
+  //     } = options;
+  //     doc.fontSize(size).font(font).fillColor(labelColor).text(label, margin, y);
+  //     doc
+  //       .fontSize(size)
+  //       .font(font)
+  //       .fillColor(valueColor)
+  //       .text(value, margin, y, {
+  //         align: "right",
+  //         width: doc.page.width - margin * 2,
+  //       });
+  //   };
+  //   const drawHr = (y) => {
+  //     doc
+  //       .strokeColor("#ddd")
+  //       .moveTo(margin, y)
+  //       .lineTo(doc.page.width - margin, y)
+  //       .stroke();
+  //   };
 
-    // --- Logo (centered)
-    const logoPath = path.join(process.cwd(), "public", "logo.jpeg");
-    try {
-      const logoWidth = 160;
-      const logoHeight = 60;
-      const centerX = doc.page.width / 2 - logoWidth / 2;
-      doc.image(logoPath, centerX, 40, {
-        fit: [logoWidth, logoHeight],
-      });
-    } catch (err) {
-      console.error("Could not load logo. Is the path correct?", err);
-    }
-    doc.y = 120;
+  //   // --- Logo (centered)
+  //   const logoPath = path.join(process.cwd(), "public", "logo.jpeg");
+  //   try {
+  //     const logoWidth = 160;
+  //     const logoHeight = 60;
+  //     const centerX = doc.page.width / 2 - logoWidth / 2;
+  //     doc.image(logoPath, centerX, 40, {
+  //       fit: [logoWidth, logoHeight],
+  //     });
+  //   } catch (err) {
+  //     console.error("Could not load logo. Is the path correct?", err);
+  //   }
+  //   doc.y = 120;
 
-    // Title
-    doc
-      .font("Helvetica-Bold")
-      .fontSize(24)
-      .fillColor("#000")
-      .text("Payment Receipt", { align: "center" });
-    doc.moveDown(3);
+  //   // Title
+  //   doc
+  //     .font("Helvetica-Bold")
+  //     .fontSize(24)
+  //     .fillColor("#000")
+  //     .text("Payment Receipt", { align: "center" });
+  //   doc.moveDown(3);
 
-    // Receipt Details
-    doc
-      .font("Helvetica-Bold")
-      .fontSize(12)
-      .fillColor("#555")
-      .text("RECEIPT DETAILS", margin);
-    doc.moveDown(1);
-    addRow(doc.y, "Receipt ID", receiptData.receiptId);
-    addRow(doc.y, "Date Paid", receiptData.datePaid);
-    addRow(doc.y, "Username", receiptData.username);
-    addRow(doc.y, "Status", receiptData.status);
-    doc.moveDown(2);
+  //   // Receipt Details
+  //   doc
+  //     .font("Helvetica-Bold")
+  //     .fontSize(12)
+  //     .fillColor("#555")
+  //     .text("RECEIPT DETAILS", margin);
+  //   doc.moveDown(1);
+  //   addRow(doc.y, "Receipt ID", receiptData.receiptId);
+  //   addRow(doc.y, "Date Paid", receiptData.datePaid);
+  //   addRow(doc.y, "Username", receiptData.username);
+  //   addRow(doc.y, "Status", receiptData.status);
+  //   doc.moveDown(2);
  
 
-    drawHr(doc.y);
-       doc.moveDown(1);
-    doc.moveDown(0.5);
-    // Payment Summary
-    doc
-      .font("Helvetica-Bold")
-      .fontSize(12)
-      .fillColor("#555")
-      .text("PAYMENT SUMMARY", margin);
-    doc.moveDown(1);
-    addRow(doc.y, "Load Amount", `$${receiptData.loadAmount.toFixed(2)}`);
-    doc.moveDown(1.5);
+  //   drawHr(doc.y);
+  //      doc.moveDown(1);
+  //   doc.moveDown(0.5);
+  //   // Payment Summary
+  //   doc
+  //     .font("Helvetica-Bold")
+  //     .fontSize(12)
+  //     .fillColor("#555")
+  //     .text("PAYMENT SUMMARY", margin);
+  //   doc.moveDown(1);
+  //   addRow(doc.y, "Load Amount", `$${receiptData.loadAmount.toFixed(2)}`);
+  //   doc.moveDown(1.5);
 
-    drawHr(doc.y);
-    doc.moveDown(0.5);
+  //   drawHr(doc.y);
+  //   doc.moveDown(0.5);
 
-    addRow(doc.y, "Total Paid", `$${receiptData.totalPaid.toFixed(2)}`, {
-      size: 14,
-      font: "Helvetica-Bold",
-      labelColor: "#000",
-    });
+  //   addRow(doc.y, "Total Paid", `$${receiptData.totalPaid.toFixed(2)}`, {
+  //     size: 14,
+  //     font: "Helvetica-Bold",
+  //     labelColor: "#000",
+  //   });
 
-    doc.moveDown(4);
+  //   doc.moveDown(4);
 
   
 
-    doc.end();
-  } catch (err) {
-    console.error("PDF generation error:", err);
-    res.status(500).json({ message: "Failed to generate PDF receipt." });
-  }
+  //   doc.end();
+  // } catch (err) {
+  //   console.error("PDF generation error:", err);
+  //   res.status(500).json({ message: "Failed to generate PDF receipt." });
+  // }
 };
