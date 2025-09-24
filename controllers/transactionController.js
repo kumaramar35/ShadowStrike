@@ -2,7 +2,7 @@ import Transaction from "../models/Transaction.js";
 import { v4 as uuidv4 } from "uuid";
 import PDFDocument from "pdfkit";
 import path from "path";
-// @desc    Create new transaction
+
 export const createTransaction = async (req, res) => {
   try {
     const { transactionId, provider, amountPaid, amountLoaded, status, receiptUrl } = req.body;
@@ -14,7 +14,7 @@ export const createTransaction = async (req, res) => {
       amountLoaded,
       status,
       receiptUrl,
-      userId: req.user._id, // from JWT
+      userId: req.user._id, 
     });
 
     res.status(201).json(transaction);
@@ -23,7 +23,6 @@ export const createTransaction = async (req, res) => {
   }
 };
 
-// @desc    Get all transactions for logged-in user
 export const getTransactions = async (req, res) => {
   try {
     const transactions = await Transaction.find({ userId: req.user._id }).sort({ date: -1 });
@@ -33,7 +32,7 @@ export const getTransactions = async (req, res) => {
   }
 };
 
-// @desc    Raise dispute
+
 export const raiseDispute = async (req, res) => {
   try {
     const transaction = await Transaction.findById(req.params.id);
@@ -54,7 +53,7 @@ export const raiseDispute = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-// @desc    Admin: Get all transactions
+
 export const getAllTransactions = async (req, res) => {
   try { 
     const transactions = await Transaction.find().sort({ date: -1 });
@@ -64,7 +63,7 @@ export const getAllTransactions = async (req, res) => {
   } 
 };
 
-// controllers/transactionController.js
+
 
 export const getReceiptPdf = async (req, res) => {
   try {
@@ -89,7 +88,8 @@ export const getReceiptPdf = async (req, res) => {
       loadAmount: tx.amountPaid || 0,
       totalPaid: tx.amountPaid || 0,
     };
-  res.status(200).json({
+
+    res.status(200).json({
       message: "Receipt fetched successfully",
       receipt: receiptData,
     });
@@ -97,108 +97,4 @@ export const getReceiptPdf = async (req, res) => {
     console.error("Receipt fetch error:", err);
     res.status(500).json({ message: "Failed to fetch receipt data." });
   }
-    // --- PDF setup
-  //   res.setHeader("Content-Type", "application/pdf");
-  //   res.setHeader(
-  //     "Content-Disposition",
-  //     `inline; filename=receipt-${receiptData.receiptId}.pdf`
-  //   );
-
-  //   const margin = 50;
-  //   const doc = new PDFDocument({ size: "A4", margin });
-  //   doc.pipe(res);
-
-  //   // Helper: row
-  //   const addRow = (y, label, value, options = {}) => {
-  //     const {
-  //       size = 12,
-  //       font = "Helvetica",
-  //       labelColor = "#555",
-  //       valueColor = "#000",
-  //     } = options;
-  //     doc.fontSize(size).font(font).fillColor(labelColor).text(label, margin, y);
-  //     doc
-  //       .fontSize(size)
-  //       .font(font)
-  //       .fillColor(valueColor)
-  //       .text(value, margin, y, {
-  //         align: "right",
-  //         width: doc.page.width - margin * 2,
-  //       });
-  //   };
-  //   const drawHr = (y) => {
-  //     doc
-  //       .strokeColor("#ddd")
-  //       .moveTo(margin, y)
-  //       .lineTo(doc.page.width - margin, y)
-  //       .stroke();
-  //   };
-
-  //   // --- Logo (centered)
-  //   const logoPath = path.join(process.cwd(), "public", "logo.jpeg");
-  //   try {
-  //     const logoWidth = 160;
-  //     const logoHeight = 60;
-  //     const centerX = doc.page.width / 2 - logoWidth / 2;
-  //     doc.image(logoPath, centerX, 40, {
-  //       fit: [logoWidth, logoHeight],
-  //     });
-  //   } catch (err) {
-  //     console.error("Could not load logo. Is the path correct?", err);
-  //   }
-  //   doc.y = 120;
-
-  //   // Title
-  //   doc
-  //     .font("Helvetica-Bold")
-  //     .fontSize(24)
-  //     .fillColor("#000")
-  //     .text("Payment Receipt", { align: "center" });
-  //   doc.moveDown(3);
-
-  //   // Receipt Details
-  //   doc
-  //     .font("Helvetica-Bold")
-  //     .fontSize(12)
-  //     .fillColor("#555")
-  //     .text("RECEIPT DETAILS", margin);
-  //   doc.moveDown(1);
-  //   addRow(doc.y, "Receipt ID", receiptData.receiptId);
-  //   addRow(doc.y, "Date Paid", receiptData.datePaid);
-  //   addRow(doc.y, "Username", receiptData.username);
-  //   addRow(doc.y, "Status", receiptData.status);
-  //   doc.moveDown(2);
- 
-
-  //   drawHr(doc.y);
-  //      doc.moveDown(1);
-  //   doc.moveDown(0.5);
-  //   // Payment Summary
-  //   doc
-  //     .font("Helvetica-Bold")
-  //     .fontSize(12)
-  //     .fillColor("#555")
-  //     .text("PAYMENT SUMMARY", margin);
-  //   doc.moveDown(1);
-  //   addRow(doc.y, "Load Amount", `$${receiptData.loadAmount.toFixed(2)}`);
-  //   doc.moveDown(1.5);
-
-  //   drawHr(doc.y);
-  //   doc.moveDown(0.5);
-
-  //   addRow(doc.y, "Total Paid", `$${receiptData.totalPaid.toFixed(2)}`, {
-  //     size: 14,
-  //     font: "Helvetica-Bold",
-  //     labelColor: "#000",
-  //   });
-
-  //   doc.moveDown(4);
-
-  
-
-  //   doc.end();
-  // } catch (err) {
-  //   console.error("PDF generation error:", err);
-  //   res.status(500).json({ message: "Failed to generate PDF receipt." });
-  // }
 };
