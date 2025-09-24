@@ -4,6 +4,19 @@ import { isAuthenticated  } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
+
+router.post("/", isAuthenticated , createTransaction);
+router.get("/", isAuthenticated , getTransactions);
+router.put("/:id/dispute", isAuthenticated , raiseDispute);
+router.get("/:id/receipt", isAuthenticated, getReceiptPdf );
+
+export default router;
+import express from "express";
+import { createTransaction, getTransactions, raiseDispute,getReceiptPdf   } from "../controllers/transactionController.js";
+import { isAuthenticated  } from "../middlewares/authMiddleware.js";
+
+const router = express.Router();
+
 // Create new transaction
 router.post("/", isAuthenticated , createTransaction);
 
