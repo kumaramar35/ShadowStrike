@@ -8,10 +8,9 @@ const router = express.Router();
 router.post("/signup", signup);
 router.post("/login", login);
 
-// admin signup route
-//router.post("/signup-admin", signupAdmin);
+//admin signuo route
+//  router.post("/signup-admin", signupAdmin);
 
-// Example: only admin & super_admin can access this
 router.get("/admin", isAuthenticated, authorizeRoles("admin", "super_admin"), (req, res) => {
   res.json({ message: "Welcome Admins" });
 });
