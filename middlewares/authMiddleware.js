@@ -2,6 +2,7 @@ import { verifyToken } from "../config/jwt.js";
 import User from "../models/User.js";
 
 export const isAuthenticated = async (req, res, next) => {
+  try{
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.startsWith("Bearer ")
     ? authHeader.split(" ")[1]
@@ -11,11 +12,24 @@ export const isAuthenticated = async (req, res, next) => {
     return res.status(401).json({ message: "No token, authorization denied" });
   }
 
-  try {
     const decoded = verifyToken(token);
-    req.user = await User.findById(decoded.id).select("-password");
+    if (!decoded) return res.status(401).json({ message: "Invalid token" });
+     req.user = {
+      id: decoded.id,
+      role: decoded.role,
+      isImpersonating: decoded.isImpersonating || false,
+      impersonatedBy: decoded.impersonatedBy || null,
+    };
+
+    // (optional) If you want to always load user fresh
+    const user = await User.findById(decoded.id).select("-password");
+    if (!user) {
+      return res.status(401).json({ message: "User not found." });
+    }
+    req.user = user;
+
     next();
-  } catch (err) {
-    res.status(401).json({ message: "Token is not valid" });
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid/expired token.", error: error.message });
   }
 };
