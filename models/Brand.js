@@ -16,13 +16,14 @@
 // export default mongoose.model('Brand', brandSchema);
 
 
+// models/Brand.js
 import mongoose from "mongoose";
+import slugify from "slugify";
 
 const brandSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     email: { type: String, unique: true, sparse: true },
-
     status: { type: Boolean, default: true },
     deposit: { type: String, default: "N/A" },
     withdrawal: { type: String, default: "N/A" },
@@ -34,27 +35,61 @@ const brandSchema = new mongoose.Schema(
     canCryptoDeposit: { type: Boolean, default: false },
     canCashAppDeposit: { type: Boolean, default: false },
 
-    // ----- Fees -----
-    playerDepositFee: { type: Number, default: 0.13 },     // %
-    playerWithdrawalFee: { type: Number, default: 0.10 },  // %
-    brandDepositFee: { type: Number, default: 0.11 },      // %
-    brandWithdrawalFee: { type: Number, default: 0.06 },   // %
+    // slug and timezone
+    slug: { type: String, unique: true, sparse: true },
+    timezone: { type: String, default: "UTC" }, 
 
-    // ----- Transaction limits -----
-    minDeposit: { type: Number, default: 5.00 },
-    maxDeposit: { type: Number, default: 999.00},
-    minWithdrawal: { type: Number, default: 25.00 },
-    maxWithdrawal: { type: Number, default: 999.00 },
-    withdrawalPercentage: { type: Number, default: 60 },
+    // Fees
+    playerDepositFee: { type: Number, default: 0 },
+    playerWithdrawalFee: { type: Number, default: 0 },
+    brandDepositFee: { type: Number, default: 0 },
+    brandWithdrawalFee: { type: Number, default: 0 },
 
-    // ----- Wallet -----
+    // Limits
+    minDeposit: { type: Number, default: 0 },
+    maxDeposit: { type: Number, default: 0 },
+    minWithdrawal: { type: Number, default: 0 },
+    maxWithdrawal: { type: Number, default: 0 },
+    withdrawalPercentage: { type: Number, default: 0 },
+
+    // Wallet
     availableBalance: { type: Number, default: 0 },
     pendingBalance: { type: Number, default: 0 },
 
-    // Notes
     notes: { type: String }
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: {
+      transform(doc, ret) {
+        ret.id = ret._id;
+        delete ret._id;
+        delete ret.__v;
+      }
+    }
+  }
 );
+
+//automatic slug generation
+brandSchema.pre("validate", async function (next) {
+  if (this.name && !this.slug) {
+    // base slug
+    const base = slugify(this.name, { lower: true, strict: true });
+    let candidate = base;
+    let i = 0;
+
+    // for uniqueness
+    while (await mongoose.models.Brand.exists({ slug: candidate })) {
+      i += 1;
+      candidate = `${base}-${i}`;
+    }
+    this.slug = candidate;
+  }
+
+
+  if (!this.timezone) this.timezone = "UTC";
+
+  next();
+});
 
 export default mongoose.model("Brand", brandSchema);
