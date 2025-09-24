@@ -4,8 +4,9 @@ import bcrypt from "bcrypt";
 const userSchema = new mongoose.Schema(
   {
     firstname: { type: String, required: true, trim: true },
-    middlename: { type: String, trim: true }, // ✅ Added
+    middlename: { type: String, trim: true }, 
     lastname: { type: String, required: true, trim: true },
+    
     email: {
       type: String,
       unique: true,
@@ -18,32 +19,33 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    city: { type: String, trim: true }, // ✅ Added
-    state: { type: String, trim: true }, // ✅ Added
-    country: { type: String, trim: true }, // ✅ Added
-    postalCode: { type: String, trim: true }, // ✅ Added
-    dob: { type: Date }, // ✅ Added
-    avatar: { type: String, trim: true }, // ✅ Added - image URL
-    bio: { type: String, trim: true }, // ✅ Added - short description
-    password: { type: String, required: true },
-    
+    city: { type: String, trim: true }, 
+    state: { type: String, trim: true }, 
+    country: { type: String, trim: true }, 
+    postalCode: { type: String, trim: true }, 
+    dob: { type: Date }, 
+    avatar: { type: String, trim: true }, 
+    bio: { type: String, trim: true }, 
+    password: { type: String, required: true},
     role: {
       type: String,
       enum: ["admin", "super_admin", "staff", "manager", "player", "user"],
       default: "user",
     },
+     brandId: { type: mongoose.Schema.Types.ObjectId, ref: "Brand", default: null },
+     status: { type: Boolean, default: true }
   },
   { timestamps: true }
 );
 
-// Hash password before saving
+
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
-// Compare password
+
 userSchema.methods.comparePassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
